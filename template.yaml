@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Lets get fixin!
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 10
+
+Parameters:
+  BadPorts:
+    Type: String
+    Default: '22,3389'
+  GoodIpRange:
+    Type: String
+    Default: 10.0.0.0/8
+
+Resources:
+  SecurityGroupRemediationLambda:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: lambda/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Environment:
+        Variables:
+          bad_ports: !Ref BadPorts
+          good_ip_range: !Ref GoodIpRange
+      MemorySize: 128
+      Timeout: 10
+      Policies:
+      - AWSLambdaExecute
+      - Version: '2012-10-17' 
+        Statement:
+          - Effect: Allow
+            Action:
+              - ec2:*SecurityGroup*
+            Resource: '*'  
+  ScheduledRule:
+      Type: 'AWS::Events::Rule'
+      Properties:
+        Name: !Sub "${AWS::StackName}-Scheduled-role"
+        State: ENABLED
+        EventPattern:
+          source:
+              - aws.ec2
+          detail-type:
+              - AWS API Call via CloudTrail
+          detail:
+              eventSource:
+                  - ec2.amazonaws.com
+              eventName:
+                  - AuthorizeSecurityGroupIngress
+        Targets:
+            - Arn:
+                'Fn::GetAtt':
+                  - SecurityGroupRemediationLambda
+                  - Arn
+              Id: GuardDutyFunction
+  LambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: events.amazonaws.com
+      FunctionName:
+          'Fn::GetAtt':
+              - SecurityGroupRemediationLambda
+              - Arn
+      SourceArn:
+          'Fn::GetAtt':
+              - ScheduledRule
+              - Arn

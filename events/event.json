@@ -1,0 +1,48 @@
+{
+  "version": "0",
+  "id": "acdc8955-a53f-b556-621e-361b96fb9f41",
+  "detail-type": "AWS API Call via CloudTrail",
+  "source": "aws.ec2",
+  "account": "123456789012",
+  "time": "2020-01-10T21:28:20Z",
+  "region": "eu-west-1",
+  "resources": [],
+  "detail": {
+    "eventVersion": "1.05",
+    "eventTime": "2020-01-10T21:28:20Z",
+    "eventSource": "ec2.amazonaws.com",
+    "eventName": "AuthorizeSecurityGroupIngress",
+    "awsRegion": "ca-central-1",
+    "sourceIPAddress": "1.1.1.1",
+    "userAgent": "aws-cli/1.16.305 Python/3.7.6 Darwin/19.2.0 botocore/1.13.46",
+    "requestParameters": {
+      "groupId": "[CHANGETHIS]",
+      "ipPermissions": {
+        "items": [
+          {
+            "ipProtocol": "tcp",
+            "fromPort": 22,
+            "toPort": 22,
+            "groups": {},
+            "ipRanges": {
+              "items": [
+                {
+                  "cidrIp": "0.0.0.0/0"
+                }
+              ]
+            },
+            "ipv6Ranges": {},
+            "prefixListIds": {}
+          }
+        ]
+      }
+    },
+    "responseElements": {
+      "requestId": "bfe9d5af-a8fa-47d0-815a-5e55ec92abc1",
+      "_return": "true"
+    },
+    "requestID": "bfe9d5af-a8fa-47d0-815a-5e55ec92abc1",
+    "eventID": "72ef6b77-a72f-4d8d-b6bc-531bace336ee",
+    "eventType": "AwsApiCall"
+  }
+}

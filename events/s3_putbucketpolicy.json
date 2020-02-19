@@ -1,0 +1,61 @@
+{
+  "version": "0",
+  "id": "6ec8ff6a-8710-6c1c-f75a-06133b0dcff1",
+  "detail-type": "AWS API Call via CloudTrail",
+  "source": "aws.s3",
+  "account": "736903191495",
+  "time": "2020-02-17T03:24:09Z",
+  "region": "ca-central-1",
+  "resources": [],
+  "detail": {
+    "eventVersion": "1.05",
+    "userIdentity": {
+      "type": "Root",
+      "principalId": "736903191495",
+      "arn": "arn:aws:iam::736903191495:root",
+      "accountId": "736903191495",
+      "accessKeyId": "ASIA2XEW2LPDWLAWRGV6",
+      "userName": "gettynathan",
+      "sessionContext": {
+        "attributes": {
+          "mfaAuthenticated": "false",
+          "creationDate": "2020-02-17T02:09:50Z"
+        }
+      }
+    },
+    "eventTime": "2020-02-17T03:24:09Z",
+    "eventSource": "s3.amazonaws.com",
+    "eventName": "PutBucketPolicy",
+    "awsRegion": "ca-central-1",
+    "sourceIPAddress": "24.76.174.44",
+    "userAgent": "[S3Console/0.4, aws-internal/3 aws-sdk-java/1.11.666 Linux/4.9.184-0.1.ac.235.83.329.metal1.x86_64 OpenJDK_64-Bit_Server_VM/25.232-b09 java/1.8.0_232 vendor/Oracle_Corporation]",
+    "requestParameters": {
+      "bucketName": "test-open-getty-123",
+      "bucketPolicy": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "PublicRead",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": ["s3:GetObject"],
+            "Resource": ["arn:aws:s3:::test-open-getty-123/*"]
+          }
+        ]
+      },
+      "host": ["s3.ca-central-1.amazonaws.com"],
+      "policy": [""]
+    },
+    "responseElements": "None",
+    "additionalEventData": {
+      "SignatureVersion": "SigV4",
+      "CipherSuite": "ECDHE-RSA-AES128-SHA",
+      "AuthenticationMethod": "AuthHeader",
+      "vpcEndpointId": "vpce-8af915e3"
+    },
+    "requestID": "E1B5BF523306E178",
+    "eventID": "84025144-0662-4964-b5ad-b10ce193d4c0",
+    "eventType": "AwsApiCall",
+    "vpcEndpointId": "vpce-8af915e3"
+  }
+}

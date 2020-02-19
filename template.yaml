@@ -15,8 +15,13 @@ Parameters:
   GoodIpRange:
     Type: String
     Default: 10.0.0.0/8
+  WhitelistBuckets:
+    Type: String
+    Description: Pythonic List
+    Default: '["None", "test-open-getty-123"]'
 
 Resources:
+  ## SG REMEDIATION
   SecurityGroupRemediationLambda:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -40,7 +45,7 @@ Resources:
   ScheduledRule:
       Type: 'AWS::Events::Rule'
       Properties:
-        Name: !Sub "${AWS::StackName}-Scheduled-role"
+        #Name: !Sub "${AWS::StackName}-Scheduled-role"
         State: ENABLED
         EventPattern:
           source:
@@ -58,7 +63,7 @@ Resources:
                   - SecurityGroupRemediationLambda
                   - Arn
               Id: GuardDutyFunction
-  LambdaInvokePermission:
+  SGInvokePermissions:
     Type: 'AWS::Lambda::Permission'
     Properties:
       Action: 'lambda:InvokeFunction'
@@ -71,3 +76,63 @@ Resources:
           'Fn::GetAtt':
               - ScheduledRule
               - Arn
+  ## / SG REMEDIATION
+
+  ## S3 Remediation
+  S3RemediationLambda:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: lambda/
+      Handler: s3.lambda_handler
+      Runtime: python3.8
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          S3_WHITELIST: !Ref WhitelistBuckets
+      Policies:
+      - AWSLambdaExecute
+      - Version: '2012-10-17' 
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:*acl*
+              - s3:*policy*
+            Resource: '*'  
+  S3Schedule:
+      Type: 'AWS::Events::Rule'
+      Properties:
+        #Name: !Sub "${AWS::StackName}-Scheduled-role"
+        State: ENABLED
+        EventPattern:
+          source:
+            - aws.s3
+          detail-type:
+              - AWS API Call via CloudTrail
+          detail:
+              eventSource:
+                  - s3.amazonaws.com
+              eventName:
+                  - PutBucketAcl
+                  - PutBucketPolicy
+
+        Targets:
+            - Arn:
+                'Fn::GetAtt':
+                  - S3RemediationLambda
+                  - Arn
+              Id: S3Func
+  S3LambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: events.amazonaws.com
+      FunctionName:
+          'Fn::GetAtt':
+              - S3RemediationLambda
+              - Arn
+      SourceArn:
+          'Fn::GetAtt':
+              - S3Schedule
+              - Arn
+  

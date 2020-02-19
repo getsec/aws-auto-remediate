@@ -1,6 +1,6 @@
 
 
-NAME="AutoSGRemediate"
+NAME="AWSAutoRemediations"
 ENV="PROD"
 S3_BUCKET="getty-sam-templates-canada"
 SAM_FORMATED_FILE_NAME="out-$ENV.yaml"

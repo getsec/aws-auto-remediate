@@ -17,7 +17,7 @@ Resources:
   SecurityGroupRemediationLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://getty-sam-templates-canada/fd656c83488109f68a04fa7e83e49287
+      CodeUri: s3://getty-sam-templates-canada/4e497835d5a2b95d216b02a84652330f
       Handler: app.lambda_handler
       Runtime: python3.8
       Environment:
@@ -39,8 +39,6 @@ Resources:
   ScheduledRule:
     Type: AWS::Events::Rule
     Properties:
-      Name:
-        Fn::Sub: ${AWS::StackName}-Scheduled-role
       State: ENABLED
       EventPattern:
         source:
@@ -58,7 +56,7 @@ Resources:
           - SecurityGroupRemediationLambda
           - Arn
         Id: GuardDutyFunction
-  LambdaInvokePermission:
+  SGInvokePermissions:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
@@ -70,4 +68,55 @@ Resources:
       SourceArn:
         Fn::GetAtt:
         - ScheduledRule
+        - Arn
+  S3RemediationLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://getty-sam-templates-canada/7b3e0330d2bc397162526b4d3957e0e7
+      Handler: s3.lambda_handler
+      Runtime: python3.8
+      MemorySize: 128
+      Timeout: 10
+      Policies:
+      - AWSLambdaExecute
+      - Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - s3:*acl*
+          - s3:*policy*
+          Resource: '*'
+  S3Schedule:
+    Type: AWS::Events::Rule
+    Properties:
+      State: ENABLED
+      EventPattern:
+        source:
+        - aws.s3
+        detail-type:
+        - AWS API Call via CloudTrail
+        detail:
+          eventSource:
+          - s3.amazonaws.com
+          eventName:
+          - PutBucketAcl
+          - PutBucketPolicy
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - S3RemediationLambda
+          - Arn
+        Id: S3Func
+  S3LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      FunctionName:
+        Fn::GetAtt:
+        - S3RemediationLambda
+        - Arn
+      SourceArn:
+        Fn::GetAtt:
+        - S3Schedule
         - Arn

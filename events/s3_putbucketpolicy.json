@@ -3,7 +3,7 @@
   "id": "6ec8ff6a-8710-6c1c-f75a-06133b0dcff1",
   "detail-type": "AWS API Call via CloudTrail",
   "source": "aws.s3",
-  "account": "736903191495",
+  "account": "xxx",
   "time": "2020-02-17T03:24:09Z",
   "region": "ca-central-1",
   "resources": [],
@@ -11,11 +11,11 @@
     "eventVersion": "1.05",
     "userIdentity": {
       "type": "Root",
-      "principalId": "736903191495",
-      "arn": "arn:aws:iam::736903191495:root",
-      "accountId": "736903191495",
-      "accessKeyId": "ASIA2XEW2LPDWLAWRGV6",
-      "userName": "gettynathan",
+      "principalId": "xxx",
+      "arn": "arn:aws:iam::xxx:root",
+      "accountId": "xxx",
+      "accessKeyId": "xxx",
+      "userName": "xxx",
       "sessionContext": {
         "attributes": {
           "mfaAuthenticated": "false",

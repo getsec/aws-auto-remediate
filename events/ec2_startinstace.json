@@ -1,0 +1,53 @@
+{
+  "version": "0",
+  "id": "25fc9adc-d81f-70c6-667f-da789745f26b",
+  "detail-type": "AWS API Call via CloudTrail",
+  "source": "aws.ec2",
+  "account": "736903191495",
+  "time": "2020-02-19T23:25:34Z",
+  "region": "ca-central-1",
+  "resources": [],
+  "detail": {
+    "eventVersion": "1.05",
+    "userIdentity": {
+      "type": "Root",
+      "principalId": "736903191495",
+      "arn": "arn:aws:iam::736903191495:root",
+      "accountId": "736903191495",
+      "accessKeyId": "ASIA2XEW2LPDVUUYHVG7",
+      "userName": "gettynathan",
+      "sessionContext": {
+        "sessionIssuer": {},
+        "webIdFederationData": {},
+        "attributes": {
+          "mfaAuthenticated": "false",
+          "creationDate": "2020-02-19T23:19:26Z"
+        }
+      }
+    },
+    "eventTime": "2020-02-19T23:25:34Z",
+    "eventSource": "ec2.amazonaws.com",
+    "eventName": "StartInstances",
+    "awsRegion": "ca-central-1",
+    "sourceIPAddress": "24.76.174.44",
+    "userAgent": "console.ec2.amazonaws.com",
+    "requestParameters": {
+      "instancesSet": { "items": [{ "instanceId": "i-0b3e270290815d479" }] }
+    },
+    "responseElements": {
+      "requestId": "a3e9cf08-4980-409a-b223-25df79199757",
+      "instancesSet": {
+        "items": [
+          {
+            "instanceId": "i-0b3e270290815d479",
+            "currentState": { "code": 0, "name": "pending" },
+            "previousState": { "code": 80, "name": "stopped" }
+          }
+        ]
+      }
+    },
+    "requestID": "a3e9cf08-4980-409a-b223-25df79199757",
+    "eventID": "4be84e94-b474-4623-ab74-29d4dd97a8b7",
+    "eventType": "AwsApiCall"
+  }
+}

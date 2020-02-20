@@ -19,6 +19,18 @@ Parameters:
     Type: String
     Description: Pythonic List
     Default: '["None", "test-open-getty-123"]'
+  WhitelistInstances:
+    Type: String
+    Description: Pythonic list of instances to ignore
+    Default: '[""]'
+  EC2OwnerTagName:
+    Description: The name of the owner tag <yourval> - username
+    Type: String
+    Default: instance_creator
+  EC2StatusChangeTagName:
+    Description: The name of the statuschange tag <yourval> - username
+    Type: String
+    Default: last_change_by
 
 Resources:
   ## SG REMEDIATION
@@ -136,3 +148,62 @@ Resources:
               - S3Schedule
               - Arn
   
+  ## EC2 Tagging Remediation
+  EC2TaggingLambda:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: lambda/
+      Handler: ec2_tagging.lambda_handler
+      Runtime: python3.8
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          EC2_WHITELIST: !Ref WhitelistInstances
+          EC2_OWNER_TAG_NAME: !Ref EC2OwnerTagName
+          EC2_STATUS_CHANGE_TAG_NAME: !Ref EC2StatusChangeTagName
+      Policies:
+      - AWSLambdaExecute
+      - Version: '2012-10-17' 
+        Statement:
+          - Effect: Allow
+            Action:
+              - ec2:*Tags
+              - ec2:Describe*
+            Resource: '*'  
+  EC2TaggingSchedule:
+      Type: 'AWS::Events::Rule'
+      Properties:
+        State: ENABLED
+        EventPattern:
+          source:
+            - aws.ec2
+          detail-type:
+              - AWS API Call via CloudTrail
+          detail:
+              eventSource:
+                  - ec2.amazonaws.com
+              eventName:
+                  - StartInstances
+                  - RunInstances
+                  - StopInstances
+                  - RebootInstances
+        Targets:
+            - Arn:
+                'Fn::GetAtt':
+                  - EC2TaggingLambda
+                  - Arn
+              Id: EC2Schedule
+  EC2LambdaTaggingPermissions:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      Principal: events.amazonaws.com
+      FunctionName:
+          'Fn::GetAtt':
+              - EC2TaggingLambda
+              - Arn
+      SourceArn:
+          'Fn::GetAtt':
+              - EC2TaggingSchedule
+              - Arn

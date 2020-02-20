@@ -13,11 +13,27 @@ Parameters:
   GoodIpRange:
     Type: String
     Default: 10.0.0.0/8
+  WhitelistBuckets:
+    Type: String
+    Description: Pythonic List
+    Default: '["None", "test-open-getty-123"]'
+  WhitelistInstances:
+    Type: String
+    Description: Pythonic list of instances to ignore
+    Default: '[""]'
+  EC2OwnerTagName:
+    Description: The name of the owner tag <yourval> - username
+    Type: String
+    Default: instance_creator
+  EC2StatusChangeTagName:
+    Description: The name of the statuschange tag <yourval> - username
+    Type: String
+    Default: last_change_by
 Resources:
   SecurityGroupRemediationLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://getty-sam-templates-canada/4e497835d5a2b95d216b02a84652330f
+      CodeUri: s3://getty-sam-templates-canada/edcad7a73c44d5343a4b55d55a6ac00a
       Handler: app.lambda_handler
       Runtime: python3.8
       Environment:
@@ -72,11 +88,15 @@ Resources:
   S3RemediationLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: s3://getty-sam-templates-canada/7b3e0330d2bc397162526b4d3957e0e7
+      CodeUri: s3://getty-sam-templates-canada/8471cca1f57db3bcc2c4740f553a88d4
       Handler: s3.lambda_handler
       Runtime: python3.8
       MemorySize: 128
       Timeout: 10
+      Environment:
+        Variables:
+          S3_WHITELIST:
+            Ref: WhitelistBuckets
       Policies:
       - AWSLambdaExecute
       - Version: '2012-10-17'
@@ -119,4 +139,65 @@ Resources:
       SourceArn:
         Fn::GetAtt:
         - S3Schedule
+        - Arn
+  EC2TaggingLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: s3://getty-sam-templates-canada/fc16478a9e06e39e98fd59293f5b9c7e
+      Handler: ec2_tagging.lambda_handler
+      Runtime: python3.8
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          EC2_WHITELIST:
+            Ref: WhitelistInstances
+          EC2_OWNER_TAG_NAME:
+            Ref: EC2OwnerTagName
+          EC2_STATUS_CHANGE_TAG_NAME:
+            Ref: EC2StatusChangeTagName
+      Policies:
+      - AWSLambdaExecute
+      - Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - ec2:*Tags
+          - ec2:Describe*
+          Resource: '*'
+  EC2TaggingSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      State: ENABLED
+      EventPattern:
+        source:
+        - aws.ec2
+        detail-type:
+        - AWS API Call via CloudTrail
+        detail:
+          eventSource:
+          - ec2.amazonaws.com
+          eventName:
+          - StartInstances
+          - RunInstances
+          - StopInstances
+          - RebootInstances
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - EC2TaggingLambda
+          - Arn
+        Id: EC2Schedule
+  EC2LambdaTaggingPermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      FunctionName:
+        Fn::GetAtt:
+        - EC2TaggingLambda
+        - Arn
+      SourceArn:
+        Fn::GetAtt:
+        - EC2TaggingSchedule
         - Arn
